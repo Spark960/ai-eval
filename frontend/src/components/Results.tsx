@@ -23,7 +23,7 @@ export default function Results({ data }: Props) {
               {Object.entries(metrics).map(([metricName, value]) => (
                 <div key={metricName} className="bg-white p-4 rounded-md border border-gray-200 shadow-sm flex flex-col justify-between">
                   <span 
-                    className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 truncate" 
+                    className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 break-words" 
                     title={metricName}
                   >
                     {metricName}
