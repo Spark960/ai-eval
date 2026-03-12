@@ -63,7 +63,7 @@ async def stream_logs(run_id: str):
     
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
-# THE ELEGANT FIX: Native FastAPI Proxy to strip the 'seed' parameter
+#this is to strip the 'seed' parameter, this is for gemini, this can all be moved to a separate file in the future.
 @app.post("/proxy/v1/chat/completions")
 async def gemini_proxy(request: Request):
     payload = await request.json()
@@ -74,6 +74,38 @@ async def gemini_proxy(request: Request):
     
     auth_header = request.headers.get('Authorization')
     url = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+    
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(
+            url, 
+            json=payload, 
+            headers={'Authorization': auth_header},
+            timeout=60.0
+        )
+        return Response(content=resp.content, status_code=resp.status_code, media_type="application/json")
+    
+#this is the groq adapter, to remove type from messages array as groq doesn't accept it
+@app.post("/proxy/groq/v1/chat/completions")
+async def groq_proxy(request: Request):
+    payload = await request.json()
+    
+    # 1. Groq rejects the 'type' property inside message objects
+    if 'messages' in payload:
+        for msg in payload['messages']:
+            msg.pop('type', None) # Strip the unsupported 'type' key
+            
+            # If lm-eval accidentally sends the new vision format (list of dicts), 
+            # flatten it down to a standard string for Groq.
+            if isinstance(msg.get('content'), list):
+                text_content = " ".join([item.get('text', '') for item in msg['content'] if item.get('type') == 'text'])
+                msg['content'] = text_content
+                
+    # 2. Groq also doesn't support logprobs yet on chat completions
+    payload.pop('logprobs', None)
+    payload.pop('top_logprobs', None)
+
+    auth_header = request.headers.get('Authorization')
+    url = "https://api.groq.com/openai/v1/chat/completions"
     
     async with httpx.AsyncClient() as client:
         resp = await client.post(

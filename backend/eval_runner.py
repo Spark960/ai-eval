@@ -25,11 +25,20 @@ def run_evaluation_thread(run_id: str, model_name: str, api_key: str, queue: asy
     try:
         os.environ["OPENAI_API_KEY"] = api_key
 
-        # 2. Run the evaluation, pointing base_url to our FastAPI proxy route
+        # 2. for running the eval, we are pointing base_url to our FastAPI proxy route if it's a Gemini model. This allows us to strip the 'seed' parameter that causes issues.
+        if "gemini" in model_name.lower():
+            # Route through our Gemini proxy
+            args_string = f"model={model_name},base_url=http://localhost:8000/proxy/v1/chat/completions"
+        elif "llama" in model_name.lower() or "mixtral" in model_name.lower() or "gemma" in model_name.lower():
+            # THE FIX: Route through our new Groq proxy to sanitize the message array
+            args_string = f"model={model_name},base_url=http://localhost:8000/proxy/groq/v1/chat/completions"
+        else:
+            # Default behavior: Let lm-eval talk straight to OpenAI
+            args_string = f"model={model_name}"
+
         results = lm_eval.simple_evaluate(
             model="local-chat-completions",
-            # THE FIX: Added /chat/completions to match main.py exactly
-            model_args=f"model={model_name},base_url=http://localhost:8000/proxy/v1/chat/completions", 
+            model_args=args_string, 
             tasks=["gsm8k"],
             limit=5,
             log_samples=False,
