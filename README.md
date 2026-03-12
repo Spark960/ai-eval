@@ -52,17 +52,16 @@ chmod +x start.sh
 ./start.sh
 ```
 
-## Manual Setup (Fallback)
+### Manual Setup (Fallback)
 If the automated scripts fail due to strict execution policies on your machine, you can start the servers manually using two terminals.
 
-Terminal 1: Backend
+**Terminal 1: Backend**
 ```bash
 cd backend
 python -m venv venv
 # On Windows use: venv\Scripts\activate
-# On Mac/Linux use:
-source venv/bin/activate
-pip install fastapi uvicorn httpx lm-eval[api]
+# On Mac/Linux use: source venv/bin/activate
+pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
@@ -77,7 +76,7 @@ Open http://localhost:5173 in your browser once both are running.
 ## How to Use & Concrete Results
 
 Open your browser to http://localhost:5173
-Enter your API Key (e.g., a Gemini or Groq key)
+Enter your own API Key. (Note: This PoC is verified specifically for Gemini and Groq keys. Standard OpenAI keys may fail until a dedicated OpenAI passthrough route is added).
 Enter the corresponding model name (e.g., gemini-flash-latest or llama-3.3-70b-versatile )
 Enter your desired task (e.g., gsm8k) and Sample Limit
 Click Run Evaluation and watch the logs stream in real-time
