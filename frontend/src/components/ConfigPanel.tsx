@@ -8,7 +8,7 @@ interface Props {
 
 export default function ConfigPanel({ onRun, isRunning }: Props) {
   const [apiKey, setApiKey] = useState('');
-  const [model, setModel] = useState('gemini-flash-latest');
+  const [model, setModel] = useState('llama-3.3-70b-versatile');
   const [task, setTask] = useState('gsm8k');
   const [limit, setLimit] = useState(5);
 
@@ -24,7 +24,7 @@ export default function ConfigPanel({ onRun, isRunning }: Props) {
       
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <label className="flex flex-col text-sm font-semibold text-gray-700">
-          Gemini API Key:
+          API Key:
           <input 
             type="password" 
             value={apiKey} 
@@ -56,7 +56,7 @@ export default function ConfigPanel({ onRun, isRunning }: Props) {
             className="mt-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-gray-100"
           />
         </label>
-        
+
         <label className="flex flex-col text-sm font-semibold text-gray-700">
           Sample Limit (Questions):
           <input 
