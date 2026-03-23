@@ -14,7 +14,7 @@ class QueueLogHandler(logging.Handler):
         # Safely push the log into the async queue from this synchronous thread
         asyncio.run_coroutine_threadsafe(self.queue.put(msg), self.loop)
 
-def run_evaluation_thread(run_id: str, model_name: str, api_key: str, queue: asyncio.Queue, loop: asyncio.AbstractEventLoop, results_store: dict):
+def run_evaluation_thread(run_id: str, model_name: str, api_key: str, task: str, limit: int, queue: asyncio.Queue, loop: asyncio.AbstractEventLoop, results_store: dict):
     # 1. Attach our custom handler to the root logger so we catch everything
     logger = logging.getLogger()
     handler = QueueLogHandler(queue, loop)
@@ -39,8 +39,8 @@ def run_evaluation_thread(run_id: str, model_name: str, api_key: str, queue: asy
         results = lm_eval.simple_evaluate(
             model="local-chat-completions",
             model_args=args_string, 
-            tasks=["gsm8k"],
-            limit=5,
+            tasks=[task],
+            limit=limit,
             log_samples=False,
             apply_chat_template=True
         )

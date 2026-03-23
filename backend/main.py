@@ -35,7 +35,7 @@ async def start_eval(request: Request):
     loop = asyncio.get_running_loop()
     threading.Thread(
         target=run_evaluation_thread,
-        args=(run_id, data['model'], data['api_key'], queues[run_id], loop, results_store),
+        args=(run_id, data['model'], data['api_key'], data['task'], data['limit'],queues[run_id], loop, results_store),
         daemon=True
     ).start()
     
