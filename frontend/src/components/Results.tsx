@@ -11,32 +11,75 @@ export default function Results({ data }: Props) {
         <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
-        Evaluation Complete
+        Evaluation Complete 
+        <span className="ml-auto text-sm font-normal text-gray-500 bg-gray-100 px-3 py-1 rounded-full">{data.engine}</span>
       </h2>
       
-      <div className="grid grid-cols-1 gap-6">
-        {Object.entries(data).map(([taskName, metrics]) => (
-          <div key={taskName} className="border border-gray-100 rounded-lg p-5 bg-gray-50 shadow-inner">
-            <h3 className="text-lg font-bold text-blue-900 mb-4 uppercase tracking-wide">{taskName}</h3>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-              {Object.entries(metrics).map(([metricName, value]) => (
-                <div key={metricName} className="bg-white p-4 rounded-md border border-gray-200 shadow-sm flex flex-col justify-between">
-                  <span 
-                    className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 break-words" 
-                    title={metricName}
-                  >
-                    {metricName}
-                  </span>
-                  <span className="text-2xl font-bold text-gray-900">
-                    {typeof value === 'number' ? value.toFixed(4) : value}
-                  </span>
+      <div className="border border-gray-100 rounded-lg p-5 bg-gray-50 shadow-inner mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-bold text-blue-900 uppercase tracking-wide">{data.task} <span className="text-sm font-normal text-gray-500 lowercase tracking-normal">({data.modality})</span></h3>
+          <span className="text-sm font-medium text-purple-700 bg-purple-100 px-2 py-1 rounded">{data.model}</span>
+        </div>
+        
+        <div className="space-y-4">
+          <h4 className="text-sm font-semibold text-gray-600 border-b pb-2">Metrics</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {Object.entries(data.metrics || {}).map(([metricName, value]) => {
+              const numVal = typeof value === 'number' ? value : 0;
+              // Simple heuristic to max the bar at 1 if decimal or 100 if whole
+              const maxVal = numVal > 1 ? 100 : 1; 
+              const percentage = Math.min(100, Math.max(0, (numVal / maxVal) * 100));
+              
+              return (
+                <div key={metricName} className="bg-white p-4 rounded-md border border-gray-200 shadow-sm">
+                  <div className="flex justify-between items-end mb-2">
+                    <span 
+                      className="text-xs font-semibold text-gray-500 uppercase tracking-wider break-words" 
+                      title={metricName}
+                    >
+                      {metricName}
+                    </span>
+                    <span className="text-xl font-bold text-gray-900">
+                      {numVal.toFixed(4)}
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-2 mt-2 border border-gray-200">
+                    <div 
+                      className="bg-blue-500 h-2 rounded-full transition-all duration-1000" 
+                      style={{ width: `${percentage}%` }}
+                    ></div>
+                  </div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </div>
-        ))}
+        </div>
       </div>
+
+      {data.trajectory && data.trajectory.length > 0 && (
+        <div className="border border-gray-100 rounded-lg p-5 bg-gray-50 shadow-inner">
+          <h4 className="text-sm font-semibold text-gray-600 border-b pb-2 mb-4">Agent Trajectory</h4>
+          <div className="space-y-4 pl-2 border-l-2 border-gray-200 ml-2">
+            {data.trajectory.map((step, idx) => (
+              <div key={idx} className="relative pl-6">
+                <span className={`absolute -left-[31px] top-1 w-4 h-4 rounded-full border-2 border-white ${
+                  step.role === 'user' ? 'bg-indigo-500' : 
+                  step.role === 'assistant' ? 'bg-green-500' : 'bg-orange-500'
+                }`}></span>
+                <div className="bg-white p-3 rounded border border-gray-200 shadow-sm relative">
+                  <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1 flex justify-between">
+                    <span>{step.role}</span>
+                    <span className="text-[10px] bg-gray-100 px-1 rounded">{step.source}</span>
+                  </div>
+                  <div className="text-sm text-gray-800 whitespace-pre-wrap font-mono">
+                    {step.content}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

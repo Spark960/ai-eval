@@ -7,6 +7,15 @@ import httpx
 import json
 import threading
 from eval_runner import run_evaluation_thread
+from schemas import EvalRequest
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
+import uuid
+import asyncio
+import httpx
+import json
+import threading
+from eval_runner import run_evaluation_thread
 
 app = FastAPI()
 
@@ -23,9 +32,19 @@ app.add_middleware(
 queues = {}
 results_store = {}
 
+@app.get("/health")
+async def health_check():
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get("http://localhost:11434/api/tags", timeout=5.0)
+            if resp.status_code == 200:
+                return {"status": "ok", "message": "Ollama API is reachable"}
+            return {"status": "error", "message": "Ollama API returned an error"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
 @app.post("/api/evaluate")
-async def start_eval(request: Request):
-    data = await request.json()
+async def start_eval(req: EvalRequest):
     run_id = str(uuid.uuid4())
     
     queues[run_id] = asyncio.Queue()
@@ -35,7 +54,7 @@ async def start_eval(request: Request):
     loop = asyncio.get_running_loop()
     threading.Thread(
         target=run_evaluation_thread,
-        args=(run_id, data['model'], data['api_key'], data['task'], data['limit'],queues[run_id], loop, results_store),
+        args=(run_id, req, queues[run_id], loop, results_store),
         daemon=True
     ).start()
     

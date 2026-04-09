@@ -69,11 +69,11 @@ def run_raw_logic_prover():
         # to Google's official OpenAI-compatible endpoint.
         results = lm_eval.simple_evaluate(
             model="local-chat-completions",
-            model_args="model=gemini-flash-latest,base_url=http://localhost:8080/v1", 
+            model_args="model=gemini-flash-latest,base_url=https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", 
             tasks=["gsm8k"],  
-            limit=5,
+            limit=1,
             log_samples=False,
-            apply_chat_template=True 
+            apply_chat_template=True
         )
 
         print("\n--- Evaluation Successful ---")
