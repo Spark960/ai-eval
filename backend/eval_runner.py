@@ -66,7 +66,8 @@ def run_evaluation_thread(run_id: str, req: EvalRequest, queue: asyncio.Queue, l
             text=True,
             encoding="utf-8",
             bufsize=1,
-            env=popen_env
+            env=popen_env,
+            cwd=os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
         )
 
         final_result = None

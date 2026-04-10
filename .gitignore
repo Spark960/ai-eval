@@ -32,3 +32,5 @@ Thumbs.db
 /backend/test_inspect_logs/
 /backend/test_moondream_logs/
 .temp_results/
+
+context_map.md

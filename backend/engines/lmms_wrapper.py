@@ -22,8 +22,9 @@ def main():
         lmms_model = "openai"
         model_args = f"model={args.model},base_url=http://localhost:11434/v1"
     elif args.modality == "audio":
-        # User specified: whisper-tiny
-        lmms_model = "hf"
+        # Use lmms-eval's built-in 'whisper' simple model for ASR tasks
+        # Note: 'hf' is NOT a registered alias; the correct name is 'whisper'
+        lmms_model = "whisper"
         model_args = "pretrained=openai/whisper-tiny"
     else:
         print(f"Unsupported modality {args.modality} in lmms_wrapper")
