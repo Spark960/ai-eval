@@ -9,7 +9,7 @@ interface Props {
 const MODEL_CAPABILITIES = {
   'qwen2.5:1.5b': ['text', 'agent'],
   'phi3:mini': ['text'],
-  'moondream:latest': ['vision'],
+  'llava-phi3': ['vision'],
   'openai/whisper-tiny': ['audio']
 };
 
@@ -31,7 +31,7 @@ export default function ConfigPanel({ onRun, isRunning }: Props) {
 
   const handleTaskToggle = (taskId: string, modality: string) => {
     if (!activeModelCaps.includes(modality)) return;
-    setSelectedTasks(prev => 
+    setSelectedTasks(prev =>
       prev.includes(taskId) ? prev.filter(id => id !== taskId) : [...prev, taskId]
     );
   };
@@ -45,16 +45,16 @@ export default function ConfigPanel({ onRun, isRunning }: Props) {
   return (
     <div className="p-6 border border-gray-200 rounded-xl bg-white shadow-sm">
       <h2 className="text-xl font-bold text-gray-800 mb-4">Configuration</h2>
-      
+
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         <label className="flex flex-col text-sm font-semibold text-gray-700">
           Model Array:
-          <select 
-            value={model} 
+          <select
+            value={model}
             onChange={e => {
               setModel(e.target.value);
               setSelectedTasks([]); // Reset tasks on model change to prevent capability mismatch
-            }} 
+            }}
             disabled={isRunning}
             className="mt-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-gray-100"
           >
@@ -71,8 +71,8 @@ export default function ConfigPanel({ onRun, isRunning }: Props) {
             {AVAILABLE_TASKS.map(task => {
               const isDisabled = !activeModelCaps.includes(task.modality) || isRunning;
               return (
-                <label 
-                  key={task.id} 
+                <label
+                  key={task.id}
                   className={`flex items-center gap-2 p-2 rounded-md transition-colors ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-200 cursor-pointer'}`}
                 >
                   <input
@@ -94,11 +94,11 @@ export default function ConfigPanel({ onRun, isRunning }: Props) {
 
         <label className="flex flex-col text-sm font-semibold text-gray-700">
           Sample Limit:
-          <input 
-            type="number" 
+          <input
+            type="number"
             min="1"
-            value={limit} 
-            onChange={e => setLimit(Number(e.target.value))} 
+            value={limit}
+            onChange={e => setLimit(Number(e.target.value))}
             disabled={isRunning}
             className="mt-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-gray-100"
           />
@@ -106,28 +106,27 @@ export default function ConfigPanel({ onRun, isRunning }: Props) {
 
         <label className="flex flex-col text-sm font-semibold text-gray-700">
           API Key (Optional for local):
-          <input 
-            type="password" 
-            value={apiKey} 
-            onChange={e => setApiKey(e.target.value)} 
+          <input
+            type="password"
+            value={apiKey}
+            onChange={e => setApiKey(e.target.value)}
             placeholder="sk-..."
             disabled={isRunning}
             className="mt-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-gray-100 disabled:text-gray-400"
           />
         </label>
 
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           disabled={isRunning || selectedTasks.length === 0}
-          className={`mt-2 p-2.5 rounded-md font-bold text-white transition-colors ${
-            isRunning || selectedTasks.length === 0
-              ? 'bg-gray-400 cursor-not-allowed' 
-              : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 cursor-pointer'
-          }`}
+          className={`mt-2 p-2.5 rounded-md font-bold text-white transition-colors ${isRunning || selectedTasks.length === 0
+            ? 'bg-gray-400 cursor-not-allowed'
+            : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 cursor-pointer'
+            }`}
         >
           {isRunning ? 'Evaluation Running...' : 'Run Capability Eval'}
         </button>
       </form>
     </div>
   );
-}
+}

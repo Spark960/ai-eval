@@ -26,26 +26,33 @@ export default function Results({ data }: Props) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Object.entries(data.metrics || {}).map(([metricName, value]) => {
               const numVal = typeof value === 'number' ? value : 0;
-              // Simple heuristic to max the bar at 1 if decimal or 100 if whole
-              const maxVal = numVal > 1 ? 100 : 1; 
-              const percentage = Math.min(100, Math.max(0, (numVal / maxVal) * 100));
-              
+              // WER is a "lower is better" metric — invert the bar so a low WER
+              // shows a nearly-full green bar, not a nearly-empty one.
+              const isWer = metricName.toLowerCase() === 'wer';
+              const maxVal = numVal > 1 ? 100 : 1;
+              const rawPct = Math.min(100, Math.max(0, (numVal / maxVal) * 100));
+              const percentage = isWer ? 100 - rawPct : rawPct;
+              const barColor = isWer ? 'bg-amber-400' : 'bg-blue-500';
+
               return (
                 <div key={metricName} className="bg-white p-4 rounded-md border border-gray-200 shadow-sm">
                   <div className="flex justify-between items-end mb-2">
-                    <span 
-                      className="text-xs font-semibold text-gray-500 uppercase tracking-wider break-words" 
+                    <span
+                      className="text-xs font-semibold text-gray-500 uppercase tracking-wider break-words"
                       title={metricName}
                     >
                       {metricName}
+                      {isWer && (
+                        <span className="ml-1 normal-case font-normal text-amber-500">(lower is better)</span>
+                      )}
                     </span>
                     <span className="text-xl font-bold text-gray-900">
                       {numVal.toFixed(4)}
                     </span>
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-2 mt-2 border border-gray-200">
-                    <div 
-                      className="bg-blue-500 h-2 rounded-full transition-all duration-1000" 
+                    <div
+                      className={`${barColor} h-2 rounded-full transition-all duration-1000`}
                       style={{ width: `${percentage}%` }}
                     ></div>
                   </div>

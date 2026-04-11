@@ -12,6 +12,8 @@ class EvalResult(BaseModel):
     model: str
     modality: Literal['text', 'vision', 'audio', 'agent']
     task: str
-    engine: Literal['lmms-eval', 'inspect-ai']
+    engine: Literal['lmms-eval', 'inspect-ai', 'faster-whisper']
     metrics: Dict[str, float]
     trajectory: Optional[List[Dict[str, Any]]] = Field(default_factory=list)
+    metadata: Optional[Dict[str, Any]] = None
+

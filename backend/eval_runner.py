@@ -8,11 +8,13 @@ from schemas import EvalRequest
 
 TASK_REGISTRY = {
     # Generative Tasks handled by LMMS-EVAL
-    "gsm8k":        {"engine": "lmms_wrapper",  "modality": "text"},
-    "mmlu_pro":     {"engine": "lmms_wrapper",  "modality": "text"},
-    "pope":         {"engine": "lmms_wrapper",  "modality": "vision"},
-    "librispeech":  {"engine": "lmms_wrapper",  "modality": "audio"},
-    
+    "gsm8k":        {"engine": "lmms_wrapper",   "modality": "text"},
+    "mmlu_pro":     {"engine": "lmms_wrapper",   "modality": "text"},
+    "pope":         {"engine": "lmms_wrapper",   "modality": "vision"},
+
+    # Audio ASR handled by faster-whisper (audio_wrapper)
+    "librispeech":  {"engine": "audio_wrapper",  "modality": "audio"},
+
     # Agent/Tool-Use Tasks handled by INSPECT-AI
     "basic_agent":  {"engine": "inspect_wrapper", "modality": "agent"},
 }
