@@ -14,7 +14,6 @@ const MODEL_CAPABILITIES = {
 };
 
 const AVAILABLE_TASKS = [
-  { id: 'gsm8k', label: 'GSM8K', modality: 'text' },
   { id: 'mmlu_pro', label: 'MMLU Pro', modality: 'text' },
   { id: 'pope', label: 'POPE', modality: 'vision' },
   { id: 'librispeech', label: 'LibriSpeech', modality: 'audio' },
