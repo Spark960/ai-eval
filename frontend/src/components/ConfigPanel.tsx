@@ -23,7 +23,7 @@ const AVAILABLE_TASKS = [
 export default function ConfigPanel({ onRun, isRunning }: Props) {
   const [apiKey, setApiKey] = useState('');
   const [model, setModel] = useState('qwen2.5:1.5b');
-  const [selectedTasks, setSelectedTasks] = useState<string[]>(['gsm8k']);
+  const [selectedTasks, setSelectedTasks] = useState<string[]>(['mmlu_pro']);
   const [limit, setLimit] = useState(5);
 
   const activeModelCaps = useMemo(() => MODEL_CAPABILITIES[model as keyof typeof MODEL_CAPABILITIES] || ['text'], [model]);

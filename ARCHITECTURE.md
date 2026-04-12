@@ -21,7 +21,7 @@ A primary reality dictating this architecture is the necessity of running comple
 
 ### Inference Stack (Local)
 To achieve memory limitations, we mapped logic to utilize hardware-light endpoints:
-- **Vision**: `moondream:1.8b` (Ollama)
+- **Vision**: `llava-phi3` (Ollama)
 - **Text & Agent**: `qwen2.5:1.5b` or `phi3:mini` (Ollama)
 - **Audio**: `openai/whisper-tiny` (Hugging Face via direct execution) - `< 200MB` VRAM required.
 
@@ -74,7 +74,7 @@ class EvalResult(BaseModel):
 
 ## 5. Subprocess Interaction Pipeline
 
-1. **Frontend Request**: User selects a model (`moondream:1.8b`). The `ConfigPanel` Capability Matrix disables all options except Vision (`pope`). Request hits `/api/evaluate`.
+1. **Frontend Request**: User selects a model (`llava-phi3`). The `ConfigPanel` Capability Matrix disables all options except Vision (`pope`). Request hits `/api/evaluate`.
 2. **Capability Router (`eval_runner.py`)**: The router queries `TASK_REGISTRY`. It determines `pope` requires `lmms_wrapper` (Text/Vision/Audio Adapter).
 3. **Subprocess Isolation (`engines/*`)**: `eval_runner` executes the path explicitly utilizing OS-level commands natively inheriting virtual environments via `sys.executable`. Standard Output (`sys.stdout`) is captured.
 4. **Server-Sent Events (SSE)**: While the evaluation completes locally, `eval_runner` pipes the `sys.stdout` lines asynchronously to a generator Queue feeding `http://localhost:8000/api/stream/{run_id}`, projecting terminal data directly to the user's browser.

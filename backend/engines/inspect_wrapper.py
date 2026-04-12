@@ -1,7 +1,7 @@
 from inspect_ai import task, Task
 from inspect_ai.dataset import Sample
-from inspect_ai.solver import generate
-from inspect_ai.scorer import match
+from inspect_ai.solver import generate, system_message, use_tools
+from inspect_ai.scorer import exact, includes, match
 import argparse
 import sys
 import os
@@ -9,22 +9,42 @@ import subprocess
 import glob
 import json
 import shutil
+from inspect_ai.tool import tool
 
 # Mock dataset for the basic_agent task
-dataset = [
-    Sample(input="What is 1234 * 5678?", target="7006652"),
-    Sample(input="What is 144 divided by 12?", target="12")
+dataset=[
+            Sample(input="What is 1234 * 5678?", target="7006652"),
+            Sample(input="What is 144 divided by 12?", target="12"),
+            Sample(input="What is 2 to the power of 10?", target="1024"),
 ]
 
 # We must name the task identically to what the router requests ("basic_agent")
+@tool
+def calculator():
+    async def execute(expression: str) -> str:
+        """Evaluate a math expression and return the numeric result.
+
+        Args:
+            expression: A mathematical expression to evaluate, e.g. '1234 * 5678' or '144 / 12'.
+        """
+        try:
+            result = eval(expression, {"__builtins__": {}}, {})
+            return str(result)
+        except Exception as e:
+            return f"Error: {e}"
+    return execute
+
 @task
 def basic_agent():
     return Task(
         dataset=dataset,
-        solver=[generate()],
-        scorer=match()
+        solver=[
+            system_message("You are an agent. Always use the calculator tool for math problems. Do not attempt mental math."),
+            use_tools(calculator()),
+            generate()
+        ],
+        scorer=includes(),
     )
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--run_id", required=False)
@@ -47,7 +67,8 @@ def main():
         sys.executable, "-m", "inspect_ai", "eval", f"{wrapper_path}@{args.task}",
         "--model", f"ollama/{args.model}",
         "--log-dir", output_dir,
-        "--log-format", "json"
+        "--log-format", "json",
+        "--cache-prompt=false"
     ]
     if args.limit is not None:
         cmd.extend(["--limit", str(args.limit)])
