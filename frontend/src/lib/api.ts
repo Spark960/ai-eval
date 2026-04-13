@@ -9,6 +9,7 @@ export interface VisionSample {
   id: string | number;
   image_base64: string;
   image_mime_type?: string;
+  question?: string | null;
   prediction?: string | null;
   target?: string | null;
   is_correct?: boolean | null;

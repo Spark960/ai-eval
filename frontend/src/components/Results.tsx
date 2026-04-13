@@ -14,6 +14,7 @@ export default function Results({ data }: Props) {
     if (!showFailedOnly) return visionSamples;
     return visionSamples.filter(sample => sample.is_correct === false);
   }, [showFailedOnly, visionSamples]);
+  const totalVisible = visibleVisionSamples.length;
 
   return (
     <div className="p-6 border border-gray-200 rounded-xl bg-white shadow-sm mt-6">
@@ -100,41 +101,63 @@ export default function Results({ data }: Props) {
 
       {data.modality === 'vision' && (visionSamples.length > 0 || hasFallbackPreview) && (
         <div className="border border-gray-100 rounded-lg p-5 bg-gray-50 shadow-inner mt-6">
-          <div className="flex justify-between items-center mb-4">
-            <h4 className="text-sm font-semibold text-gray-600 border-b pb-2">Evaluated Images</h4>
-            <label className="text-xs font-medium text-gray-600 flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={showFailedOnly}
-                onChange={(e) => setShowFailedOnly(e.target.checked)}
-                className="rounded border-gray-300"
-              />
-              Failed only ({failedCount})
-            </label>
+          <div className="flex flex-wrap justify-between items-center gap-2 mb-4">
+            <h4 className="text-sm font-semibold text-gray-600">Evaluated Images</h4>
+            <div className="flex items-center gap-4">
+              <span className="text-xs text-gray-500">
+                Showing {totalVisible} / {visionSamples.length}
+              </span>
+              <label className="text-xs font-medium text-gray-600 flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={showFailedOnly}
+                  onChange={(e) => setShowFailedOnly(e.target.checked)}
+                  className="rounded border-gray-300"
+                />
+                Failed only ({failedCount})
+              </label>
+            </div>
           </div>
 
           {showFailedOnly && visibleVisionSamples.length === 0 && (
             <p className="text-sm text-gray-500">No failed samples found in this run.</p>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="max-h-[60vh] overflow-y-auto pr-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
             {visibleVisionSamples.map((sample, idx) => (
               <div key={`${sample.id}-${idx}`} className="bg-white p-3 rounded-md border border-gray-200 shadow-sm">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <span className="text-xs text-gray-500">Sample #{String(sample.id)}</span>
+                  {typeof sample.is_correct === 'boolean' && (
+                    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                      sample.is_correct ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                    }`}>
+                      {sample.is_correct ? 'Correct' : 'Failed'}
+                    </span>
+                  )}
+                </div>
+                {sample.question && (
+                  <div className="mb-2 text-xs text-gray-700 line-clamp-2" title={sample.question}>
+                    <span className="font-semibold text-gray-600">Question:</span> {sample.question}
+                  </div>
+                )}
                 <img
                   src={`data:${sample.image_mime_type || 'image/jpeg'};base64,${sample.image_base64}`}
                   alt={`Vision sample ${idx + 1}`}
-                  className="w-full max-h-64 object-contain rounded border"
+                  className="w-full h-40 object-contain rounded border bg-gray-50"
                 />
                 <div className="mt-2 text-xs text-gray-700 space-y-1">
-                  <div><span className="font-semibold">Sample:</span> {String(sample.id)}</div>
-                  {sample.target && <div><span className="font-semibold">Target:</span> {sample.target}</div>}
-                  {sample.prediction && <div><span className="font-semibold">Prediction:</span> {sample.prediction}</div>}
-                  {typeof sample.is_correct === 'boolean' && (
+                  {sample.target && (
                     <div>
-                      <span className="font-semibold">Result:</span>{' '}
-                      <span className={sample.is_correct ? 'text-green-600' : 'text-red-600'}>
-                        {sample.is_correct ? 'Correct' : 'Failed'}
-                      </span>
+                      <span className="font-semibold">Target:</span>{' '}
+                      <span className="inline-block bg-gray-100 px-1.5 py-0.5 rounded">{sample.target}</span>
+                    </div>
+                  )}
+                  {sample.prediction && (
+                    <div>
+                      <span className="font-semibold">Prediction:</span>{' '}
+                      <span className="inline-block bg-blue-50 text-blue-800 px-1.5 py-0.5 rounded">{sample.prediction}</span>
                     </div>
                   )}
                 </div>
@@ -146,13 +169,14 @@ export default function Results({ data }: Props) {
                 <img
                   src={`data:image/jpeg;base64,${data.input_preview}`}
                   alt="Evaluated vision input"
-                  className="w-full max-h-64 object-contain rounded border"
+                  className="w-full h-40 object-contain rounded border bg-gray-50"
                 />
                 <div className="mt-2 text-xs text-gray-500">
                   Preview fallback from result payload (`input_preview`).
                 </div>
               </div>
             )}
+            </div>
           </div>
         </div>
       )}

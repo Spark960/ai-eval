@@ -74,6 +74,18 @@ def _extract_target(sample: Dict[str, Any]) -> Optional[str]:
     return None
 
 
+def _extract_question(sample: Dict[str, Any]) -> Optional[str]:
+    value = sample.get("input")
+    if isinstance(value, str):
+        return value.strip()
+    doc = sample.get("doc", {}) or {}
+    for key in ("question", "query", "text"):
+        doc_value = doc.get(key)
+        if isinstance(doc_value, str):
+            return doc_value.strip()
+    return None
+
+
 def _extract_is_correct(sample: Dict[str, Any], prediction: Optional[str], target: Optional[str]) -> Optional[bool]:
     for key in ("is_correct", "correct", "passed", "acc", "exact_match"):
         value = sample.get(key)
@@ -249,6 +261,7 @@ def main():
 
                     prediction = _extract_prediction(sample)
                     target = _extract_target(sample)
+                    question = _extract_question(sample)
                     is_correct = _extract_is_correct(sample, prediction, target)
 
                     if input_preview is None:
@@ -260,6 +273,7 @@ def main():
                         "image_mime_type": mime_type or "image/jpeg",
                         "prediction": prediction,
                         "target": target,
+                        "question": question,
                         "is_correct": is_correct,
                     })
 
@@ -282,6 +296,7 @@ def main():
                         continue
                     prediction = _extract_prediction(sample)
                     target = _extract_target(sample)
+                    question = _extract_question(sample)
                     is_correct = _extract_is_correct(sample, prediction, target)
                     if input_preview is None:
                         input_preview = image_b64
@@ -291,6 +306,7 @@ def main():
                         "image_mime_type": mime_type or "image/jpeg",
                         "prediction": prediction,
                         "target": target,
+                        "question": question,
                         "is_correct": is_correct,
                     })
 
