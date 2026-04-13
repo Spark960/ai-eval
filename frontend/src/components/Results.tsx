@@ -17,6 +17,48 @@ export default function Results({ data }: Props) {
   }, [showFailedOnly, visionSamples]);
   const totalVisible = visibleVisionSamples.length;
   const selectedVisionSample = selectedVisionIndex !== null ? visibleVisionSamples[selectedVisionIndex] : null;
+  const metricEntries = useMemo(
+    () =>
+      Object.entries(data.metrics || {}).filter(
+        ([, value]) => typeof value === 'number' && Number.isFinite(value)
+      ),
+    [data.metrics]
+  );
+
+  const primaryMetricKeys = useMemo(() => {
+    if (data.modality === 'audio') return ['wer', 'accuracy'];
+    if (data.modality === 'text') return ['exact_match', 'accuracy', 'f1'];
+    if (data.modality === 'agent') return ['success', 'accuracy', 'score'];
+    return ['accuracy', 'f1', 'score'];
+  }, [data.modality]);
+
+  const primaryMetrics = useMemo(
+    () =>
+      metricEntries.filter(([name]) =>
+        primaryMetricKeys.some((key) => name.toLowerCase().includes(key))
+      ),
+    [metricEntries, primaryMetricKeys]
+  );
+
+  const insightText = useMemo(() => {
+    if (data.modality === 'audio') {
+      return 'Audio runs are easiest to compare with WER (lower is better) and accuracy.';
+    }
+    if (data.modality === 'text') {
+      return 'Text runs are best interpreted with exact-match/accuracy style metrics.';
+    }
+    if (data.modality === 'agent') {
+      return 'Agent runs should be read with both metrics and trajectory quality together.';
+    }
+    return 'Vision runs are easiest to debug by combining metrics with failed-image inspection.';
+  }, [data.modality]);
+
+  const formatMetricName = (metricName: string) =>
+    metricName
+      .replace(/,none$/i, '')
+      .replace(/^pope_/i, '')
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (ch) => ch.toUpperCase());
 
   useEffect(() => {
     if (selectedVisionIndex !== null && selectedVisionIndex >= visibleVisionSamples.length) {
@@ -42,12 +84,32 @@ export default function Results({ data }: Props) {
         
         <div className="space-y-4">
           <h4 className="text-sm font-semibold text-slate-300 border-b border-slate-700 pb-2">Metrics</h4>
+          <p className="text-xs text-slate-400">{insightText}</p>
+          {primaryMetrics.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {primaryMetrics.slice(0, 3).map(([metricName, value]) => {
+                const numVal = value as number;
+                const isWer = metricName.toLowerCase().includes('wer');
+                return (
+                  <div key={`primary-${metricName}`} className="bg-slate-900 p-3 rounded-md border border-slate-700">
+                    <div className="text-[11px] text-slate-400 uppercase tracking-wide">
+                      {formatMetricName(metricName)}
+                    </div>
+                    <div className="mt-1 text-2xl font-bold text-slate-100">{numVal.toFixed(4)}</div>
+                    <div className={`text-[11px] mt-1 ${isWer ? 'text-amber-400' : 'text-emerald-400'}`}>
+                      {isWer ? 'Lower is better' : 'Higher is better'}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {Object.entries(data.metrics || {}).map(([metricName, value]) => {
-              const numVal = typeof value === 'number' ? value : 0;
+            {metricEntries.map(([metricName, value]) => {
+              const numVal = value as number;
               // WER is a "lower is better" metric — invert the bar so a low WER
               // shows a nearly-full green bar, not a nearly-empty one.
-              const isWer = metricName.toLowerCase() === 'wer';
+              const isWer = metricName.toLowerCase().includes('wer');
               const maxVal = numVal > 1 ? 100 : 1;
               const rawPct = Math.min(100, Math.max(0, (numVal / maxVal) * 100));
               const percentage = isWer ? 100 - rawPct : rawPct;
@@ -60,7 +122,7 @@ export default function Results({ data }: Props) {
                       className="text-xs font-semibold text-slate-400 uppercase tracking-wider break-words"
                       title={metricName}
                     >
-                      {metricName}
+                      {formatMetricName(metricName)}
                       {isWer && (
                         <span className="ml-1 normal-case font-normal text-amber-500">(lower is better)</span>
                       )}
@@ -79,6 +141,9 @@ export default function Results({ data }: Props) {
               );
             })}
           </div>
+          {metricEntries.length === 0 && (
+            <p className="text-sm text-slate-400">No numeric metrics were returned for this run.</p>
+          )}
         </div>
       </div>
 
