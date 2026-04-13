@@ -1,10 +1,20 @@
 import type { EvalResults } from '../lib/api';
+import { useMemo, useState } from 'react';
 
 interface Props {
   data: EvalResults;
 }
 
 export default function Results({ data }: Props) {
+  const [showFailedOnly, setShowFailedOnly] = useState(false);
+  const visionSamples = data.vision_samples ?? [];
+  const hasFallbackPreview = data.modality === 'vision' && !!data.input_preview;
+  const failedCount = visionSamples.filter(sample => sample.is_correct === false).length;
+  const visibleVisionSamples = useMemo(() => {
+    if (!showFailedOnly) return visionSamples;
+    return visionSamples.filter(sample => sample.is_correct === false);
+  }, [showFailedOnly, visionSamples]);
+
   return (
     <div className="p-6 border border-gray-200 rounded-xl bg-white shadow-sm mt-6">
       <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
@@ -84,6 +94,65 @@ export default function Results({ data }: Props) {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {data.modality === 'vision' && (visionSamples.length > 0 || hasFallbackPreview) && (
+        <div className="border border-gray-100 rounded-lg p-5 bg-gray-50 shadow-inner mt-6">
+          <div className="flex justify-between items-center mb-4">
+            <h4 className="text-sm font-semibold text-gray-600 border-b pb-2">Evaluated Images</h4>
+            <label className="text-xs font-medium text-gray-600 flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={showFailedOnly}
+                onChange={(e) => setShowFailedOnly(e.target.checked)}
+                className="rounded border-gray-300"
+              />
+              Failed only ({failedCount})
+            </label>
+          </div>
+
+          {showFailedOnly && visibleVisionSamples.length === 0 && (
+            <p className="text-sm text-gray-500">No failed samples found in this run.</p>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {visibleVisionSamples.map((sample, idx) => (
+              <div key={`${sample.id}-${idx}`} className="bg-white p-3 rounded-md border border-gray-200 shadow-sm">
+                <img
+                  src={`data:${sample.image_mime_type || 'image/jpeg'};base64,${sample.image_base64}`}
+                  alt={`Vision sample ${idx + 1}`}
+                  className="w-full max-h-64 object-contain rounded border"
+                />
+                <div className="mt-2 text-xs text-gray-700 space-y-1">
+                  <div><span className="font-semibold">Sample:</span> {String(sample.id)}</div>
+                  {sample.target && <div><span className="font-semibold">Target:</span> {sample.target}</div>}
+                  {sample.prediction && <div><span className="font-semibold">Prediction:</span> {sample.prediction}</div>}
+                  {typeof sample.is_correct === 'boolean' && (
+                    <div>
+                      <span className="font-semibold">Result:</span>{' '}
+                      <span className={sample.is_correct ? 'text-green-600' : 'text-red-600'}>
+                        {sample.is_correct ? 'Correct' : 'Failed'}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+
+            {visionSamples.length === 0 && data.input_preview && (
+              <div className="bg-white p-3 rounded-md border border-gray-200 shadow-sm">
+                <img
+                  src={`data:image/jpeg;base64,${data.input_preview}`}
+                  alt="Evaluated vision input"
+                  className="w-full max-h-64 object-contain rounded border"
+                />
+                <div className="mt-2 text-xs text-gray-500">
+                  Preview fallback from result payload (`input_preview`).
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

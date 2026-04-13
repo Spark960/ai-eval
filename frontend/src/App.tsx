@@ -118,7 +118,6 @@ function App() {
               setLogs={setLogs} 
               onComplete={handleEvalComplete} 
             />
-            
             {results && <Results data={results} />}
           </div>
         </div>
