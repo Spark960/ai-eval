@@ -3,7 +3,8 @@
 
 A capability aware evaluation dashboard that benchmarks local AI models across **Text, Vision, Audio, and Agent** tasks through a unified backend with real-time SSE log streaming.
 
----
+![visionEval](./assets/vision_eval_gif.gif)
+
 
 ## What This Is
 
@@ -15,15 +16,9 @@ Most eval frameworks do diff things, one library for text, vision, another for a
 - Normalizes all results into a single unified JSON schema
 
 ---
-## Demo Videos
-### Text
-* https://drive.google.com/file/d/1orlIrFCEDQWisusVhsHQaNHFMHlZ0UZu/view?usp=sharing
-### Vision test (llava-Pope)
-* https://drive.google.com/file/d/1XPGyHfNg3MBGxacspEFHRhSHMKUX0gXV/view?usp=sharing
-### Audio test (Whisper Tiny-Libri Speech)
-* https://drive.google.com/file/d/1l6dBimZgg1g4dX-TlX11l1LmfwKNXaGs/view?usp=sharing
-### Agent rool call test (Qwen 2.5 1.5b)
-* https://drive.google.com/file/d/1udKRfhB0Wy0jpskueMDXSjuFzj8nTi39/view?usp=sharing
+## Demo Video
+* https://drive.google.com/file/d/1ii6Yns5Dpk60_efnfcY4It2U1k9zngIy/view
+
 ## Architecture
 
 ```
